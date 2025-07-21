@@ -4,10 +4,9 @@
 import re
 import subprocess
 import sys
-from typing import List, Tuple, Set
 
 
-def get_installed_python_versions() -> List[str]:
+def get_installed_python_versions() -> list[str]:
     """Get list of installed Python versions from uv."""
     try:
         result = subprocess.run(
@@ -22,7 +21,7 @@ def get_installed_python_versions() -> List[str]:
             return []
 
         # Parse the output to extract version numbers
-        versions: Set[str] = set()
+        versions: set[str] = set()
         for line in result.stdout.strip().split("\n"):
             if not line.strip():
                 continue
@@ -51,7 +50,7 @@ def get_installed_python_versions() -> List[str]:
         return ["3.10", "3.11", "3.12"]  # Fallback versions
 
 
-def run_tests_for_version(python_version: str) -> Tuple[bool, str]:
+def run_tests_for_version(python_version: str) -> tuple[bool, str]:
     """Run tests for a specific Python version."""
     print(f"\n{'=' * 60}")
     print(f"Running tests for Python {python_version}")
@@ -98,7 +97,7 @@ def main():
 
     print(f"📋 Versions to test: {', '.join(python_versions)}")
 
-    results: List[Tuple[str, bool, str]] = []
+    results: list[tuple[str, bool, str]] = []
 
     # Run tests for each Python version
     for version in python_versions:

@@ -299,7 +299,7 @@ class TestPlamoTranslator:
         translator._copy_to_clipboard("Test text")
 
         mock_subprocess.assert_called_once_with(
-            ["/usr/bin/pbcopy"], input="Test text".encode("utf-8"), check=True
+            ["/usr/bin/pbcopy"], input=b"Test text", check=True
         )
 
     def test_copy_to_clipboard_error(self, translator, mocker):

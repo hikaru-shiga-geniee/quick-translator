@@ -4,7 +4,7 @@ import os
 import sys
 import time
 import subprocess
-from typing import Optional, Tuple, List
+from typing import Optional
 
 
 class PlamoTranslator:
@@ -12,7 +12,7 @@ class PlamoTranslator:
         self.program_start_time = time.time()
         self.plamo_path, self.path_list = self._find_plamo_translate()
 
-    def _find_plamo_translate(self) -> Tuple[Optional[str], List[str]]:
+    def _find_plamo_translate(self) -> tuple[Optional[str], list[str]]:
         """plamo-translateのパスを複数の方法で検索"""
         # シェルの種類を検出
         shell_name = os.path.basename(os.environ.get("SHELL", "/bin/sh"))
@@ -22,7 +22,7 @@ class PlamoTranslator:
 
         return plamo_path, path_list
 
-    def _search_via_shell(self, shell_name: str) -> Tuple[Optional[str], List[str]]:
+    def _search_via_shell(self, shell_name: str) -> tuple[Optional[str], list[str]]:
         """ログインシェルから$PATHを取得してplamo-translateを検索"""
         shell_path = os.environ.get("SHELL", "/bin/sh")
 
@@ -39,7 +39,7 @@ class PlamoTranslator:
 
         return None, path_list
 
-    def _get_path_from_shell(self, shell_path: str, shell_name: str) -> List[str]:
+    def _get_path_from_shell(self, shell_path: str, shell_name: str) -> list[str]:
         """ログインシェルから$PATHを取得してパースする"""
         try:
             # ログインシェルから$PATHを取得
@@ -94,7 +94,7 @@ class PlamoTranslator:
         ):
             return []
 
-    def _ensure_common_paths(self, path_list: List[str]) -> List[str]:
+    def _ensure_common_paths(self, path_list: list[str]) -> list[str]:
         """重要なパスが欠けている場合は手動で追加"""
         # よく使われる重要なパス
         important_paths = [
@@ -132,7 +132,7 @@ class PlamoTranslator:
         except subprocess.SubprocessError:
             pass  # クリップボードのコピーに失敗しても継続
 
-    def _show_plamo_not_found_error(self, path_list: Optional[List[str]] = None) -> None:
+    def _show_plamo_not_found_error(self, path_list: Optional[list[str]] = None) -> None:
         """plamo-translateが見つからない場合のエラーダイアログ"""
         shell = os.environ.get("SHELL", "unknown")
         shell_name = os.path.basename(shell)
@@ -159,7 +159,7 @@ class PlamoTranslator:
         console_msg = error_msg.replace("\\n", "\n")
         print(f"エラー: {console_msg}", file=sys.stderr)
 
-    def translate_with_plamo_cli(self, text: str) -> Tuple[str, float]:
+    def translate_with_plamo_cli(self, text: str) -> tuple[str, float]:
         """plamo-translate CLIを使ってテキストを翻訳"""
         if not self.plamo_path:
             self._show_plamo_not_found_error(self.path_list)

@@ -6,7 +6,7 @@ import time
 import json
 import subprocess
 import tempfile
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class QuickTranslator:
@@ -56,7 +56,7 @@ class QuickTranslator:
         except subprocess.SubprocessError:
             pass  # クリップボードのコピーに失敗しても継続
 
-    def translate_with_api(self, text: str) -> Tuple[str, float]:
+    def translate_with_api(self, text: str) -> tuple[str, float]:
         """OpenAI APIを使ってテキストを翻訳"""
         if not self.api_key:
             raise ValueError("エラー: 環境変数OPENAI_API_KEYが設定されていません")

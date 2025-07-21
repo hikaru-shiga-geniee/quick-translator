@@ -126,7 +126,7 @@ class TestQuickTranslatorGemini:
         translator._copy_to_clipboard("Test text")
 
         mock_subprocess.assert_called_once_with(
-            ["pbcopy"], input="Test text".encode("utf-8"), check=True
+            ["pbcopy"], input=b"Test text", check=True
         )
 
     def test_copy_to_clipboard_error(self, translator, mocker):
