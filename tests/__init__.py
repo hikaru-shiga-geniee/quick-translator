@@ -1,1 +1,1 @@
-# Tests for quick-translator 
+# Tests for quick-translator
