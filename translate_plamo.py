@@ -132,7 +132,7 @@ class PlamoTranslator:
         except subprocess.SubprocessError:
             pass  # クリップボードのコピーに失敗しても継続
 
-    def _show_plamo_not_found_error(self, path_list: List[str] = None) -> None:
+    def _show_plamo_not_found_error(self, path_list: Optional[List[str]] = None) -> None:
         """plamo-translateが見つからない場合のエラーダイアログ"""
         shell = os.environ.get("SHELL", "unknown")
         shell_name = os.path.basename(shell)
