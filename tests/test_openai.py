@@ -11,7 +11,7 @@ import pytest
 # Add the parent directory to sys.path to import translate-openai
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from translate_openai import QuickTranslator, main
+from translate_openai import QuickTranslator, main, MODEL
 
 
 class TestQuickTranslator:
@@ -322,7 +322,7 @@ class TestQuickTranslator:
         mock_copy.assert_called_once_with("Translation result")
 
         expected_message = (
-            "Translation result\n\n翻訳API時間: 1.50秒\n全体実行時間: 3.00秒"
+            f"Translation result\n\n使用モデル: {MODEL}\n翻訳API時間: 1.50秒\n全体実行時間: 3.00秒"
         )
         mock_dialog.assert_called_once_with(expected_message, "翻訳結果")
 

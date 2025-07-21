@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 from typing import Optional
 
+MODEL="gpt-4.1-nano"
 
 class QuickTranslator:
     def __init__(self):
@@ -66,7 +67,7 @@ class QuickTranslator:
 
         # JSONデータの準備
         json_data = {
-            "model": "gpt-4.1-nano",
+            "model": MODEL,
             "messages": [
                 {
                     "role": "system",
@@ -195,7 +196,7 @@ class QuickTranslator:
             formatted_total_time = f"{total_time:.2f}"
 
             # 結果を表示
-            time_info = f"\n\n翻訳API時間: {formatted_api_time}秒\n全体実行時間: {formatted_total_time}秒"
+            time_info = f"\n\n使用モデル: {MODEL}\n翻訳API時間: {formatted_api_time}秒\n全体実行時間: {formatted_total_time}秒"
             message = f"{translated_text}{time_info}"
             self._show_dialog(message, "翻訳結果")
 

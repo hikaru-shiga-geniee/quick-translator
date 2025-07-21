@@ -11,7 +11,7 @@ import pytest
 # Add the parent directory to sys.path to import translate_gemini
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from translate_gemini import QuickTranslator, main
+from translate_gemini import QuickTranslator, main, MODEL
 
 
 class TestQuickTranslatorGemini:
@@ -189,7 +189,7 @@ class TestQuickTranslatorGemini:
             "POST",
             "-d",
             "@/tmp/test.json",
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
+            f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent",
         ]
         mock_subprocess.assert_called_once_with(
             expected_cmd, capture_output=True, text=True, timeout=30
@@ -247,7 +247,7 @@ class TestQuickTranslatorGemini:
 
         # Second call (URL parameter method)
         second_call_args = mock_subprocess.call_args_list[1][0][0]
-        api_url_with_key = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=test-gemini-api-key"
+        api_url_with_key = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key=test-gemini-api-key"
         assert api_url_with_key in second_call_args
 
     def test_translate_with_api_both_methods_fail(self, translator, mocker):
@@ -457,7 +457,7 @@ class TestQuickTranslatorGemini:
         mock_copy.assert_called_once_with("Translation result")
 
         expected_message = (
-            "Translation result\n\n翻訳API時間: 1.50秒\n全体実行時間: 3.00秒"
+            f"Translation result\n\n使用モデル: {MODEL}\n翻訳API時間: 1.50秒\n全体実行時間: 3.00秒"
         )
         mock_dialog.assert_called_once_with(expected_message, "翻訳結果")
 

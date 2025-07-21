@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 from typing import Optional
 
+MODEL = "gemini-2.5-flash-lite-preview-06-17"
 
 class QuickTranslator:
     def __init__(self):
@@ -97,7 +98,7 @@ class QuickTranslator:
             try:
                 # Gemini APIのエンドポイント
                 # gemini-1.5-flashまたはgemini-1.5-flash-latestを使用
-                api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+                api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
                 # curlでAPIを呼び出す（2つの方法を提供）
 
@@ -231,7 +232,7 @@ class QuickTranslator:
             formatted_total_time = f"{total_time:.2f}"
 
             # 結果を表示
-            time_info = f"\n\n翻訳API時間: {formatted_api_time}秒\n全体実行時間: {formatted_total_time}秒"
+            time_info = f"\n\n使用モデル: {MODEL}\n翻訳API時間: {formatted_api_time}秒\n全体実行時間: {formatted_total_time}秒"
             message = f"{translated_text}{time_info}"
             self._show_dialog(message, "翻訳結果")
 
