@@ -10,6 +10,7 @@ import time
 import json
 import subprocess
 import tempfile
+import argparse
 from typing import Dict, List, Tuple, Optional
 import statistics
 
@@ -42,7 +43,7 @@ MODELS = {
     ],
     "gemini": [
         {"name": "gemini-2.0-flash-lite", "model": "gemini-2.0-flash-lite"},
-        {"name": "gemini-2.5-flash-lite-preview-06-17", "model": "gemini-2.5-flash-lite-preview-06-17"},
+        {"name": "gemini-2.5-flash-lite", "model": "gemini-2.5-flash-lite"},
         {"name": "gemini-2.5-flash", "model": "gemini-2.5-flash"}
     ],
     "plamo": [
@@ -263,48 +264,86 @@ class TranslationBenchmark:
             elapsed_time = time.time() - start_time
             return None, elapsed_time
     
-    def run_benchmark(self, iterations: int = 10):
+    def run_benchmark(self, iterations: int = 10, models_to_test: Optional[List[str]] = None):
         """ベンチマークを実行"""
         print("翻訳ベンチマークを開始します...")
         print(f"各テストケースを{iterations}回実行します\n")
         
+        # テストするモデルを決定
+        if models_to_test is None:
+            models_to_test = ["openai", "gemini", "plamo"]
+        
+        print(f"テスト対象モデル: {', '.join(models_to_test)}\n")
+        
         # OpenAIモデルのテスト
-        for model_info in MODELS["openai"]:
-            model_name = model_info["name"]
-            model_id = model_info["model"]
-            print(f"\n=== {model_name} のテスト ===")
-            
-            for test_key, test_info in TEST_CASES.items():
-                print(f"\n{test_info['name']}:")
-                times = []
-                success_count = 0
+        if "openai" in models_to_test:
+            for model_info in MODELS["openai"]:
+                model_name = model_info["name"]
+                model_id = model_info["model"]
+                print(f"\n=== {model_name} のテスト ===")
                 
-                for i in range(iterations):
-                    translated, elapsed = self._translate_openai(test_info["text"], model_id)
-                    if translated:
-                        times.append(elapsed)
-                        success_count += 1
-                        print(f"  試行{i+1}: {elapsed:.3f}秒")
-                    else:
-                        print(f"  試行{i+1}: 失敗")
-                
-                if times:
-                    avg_time = statistics.mean(times)
-                    min_time = min(times)
-                    max_time = max(times)
-                    std_dev = statistics.stdev(times) if len(times) > 1 else 0
+                for test_key, test_info in TEST_CASES.items():
+                    print(f"\n{test_info['name']}:")
+                    times = []
+                    success_count = 0
                     
-                    print(f"  成功: {success_count}/{iterations}")
-                    print(f"  平均: {avg_time:.3f}秒")
-                    print(f"  最小: {min_time:.3f}秒")
-                    print(f"  最大: {max_time:.3f}秒")
-                    print(f"  標準偏差: {std_dev:.3f}秒")
+                    for i in range(iterations):
+                        translated, elapsed = self._translate_openai(test_info["text"], model_id)
+                        if translated:
+                            times.append(elapsed)
+                            success_count += 1
+                            print(f"  試行{i+1}: {elapsed:.3f}秒")
+                        else:
+                            print(f"  試行{i+1}: 失敗")
+                    
+                    if times:
+                        avg_time = statistics.mean(times)
+                        min_time = min(times)
+                        max_time = max(times)
+                        std_dev = statistics.stdev(times) if len(times) > 1 else 0
+                        
+                        print(f"  成功: {success_count}/{iterations}")
+                        print(f"  平均: {avg_time:.3f}秒")
+                        print(f"  最小: {min_time:.3f}秒")
+                        print(f"  最大: {max_time:.3f}秒")
+                        print(f"  標準偏差: {std_dev:.3f}秒")
         
         # Geminiモデルのテスト
-        for model_info in MODELS["gemini"]:
-            model_name = model_info["name"]
-            model_id = model_info["model"]
-            print(f"\n=== {model_name} のテスト ===")
+        if "gemini" in models_to_test:
+            for model_info in MODELS["gemini"]:
+                model_name = model_info["name"]
+                model_id = model_info["model"]
+                print(f"\n=== {model_name} のテスト ===")
+                
+                for test_key, test_info in TEST_CASES.items():
+                    print(f"\n{test_info['name']}:")
+                    times = []
+                    success_count = 0
+                    
+                    for i in range(iterations):
+                        translated, elapsed = self._translate_gemini(test_info["text"], model_id)
+                        if translated:
+                            times.append(elapsed)
+                            success_count += 1
+                            print(f"  試行{i+1}: {elapsed:.3f}秒")
+                        else:
+                            print(f"  試行{i+1}: 失敗")
+                    
+                    if times:
+                        avg_time = statistics.mean(times)
+                        min_time = min(times)
+                        max_time = max(times)
+                        std_dev = statistics.stdev(times) if len(times) > 1 else 0
+                        
+                        print(f"  成功: {success_count}/{iterations}")
+                        print(f"  平均: {avg_time:.3f}秒")
+                        print(f"  最小: {min_time:.3f}秒")
+                        print(f"  最大: {max_time:.3f}秒")
+                        print(f"  標準偏差: {std_dev:.3f}秒")
+        
+        # Plamoのテスト（サーバー事前起動なし）
+        if "plamo" in models_to_test:
+            print(f"\n=== plamo-translate (サーバー事前起動なし) のテスト ===")
             
             for test_key, test_info in TEST_CASES.items():
                 print(f"\n{test_info['name']}:")
@@ -312,7 +351,7 @@ class TranslationBenchmark:
                 success_count = 0
                 
                 for i in range(iterations):
-                    translated, elapsed = self._translate_gemini(test_info["text"], model_id)
+                    translated, elapsed = self._translate_plamo(test_info["text"], server_prestart=False)
                     if translated:
                         times.append(elapsed)
                         success_count += 1
@@ -331,112 +370,101 @@ class TranslationBenchmark:
                     print(f"  最小: {min_time:.3f}秒")
                     print(f"  最大: {max_time:.3f}秒")
                     print(f"  標準偏差: {std_dev:.3f}秒")
-        
-        # Plamoのテスト（サーバー事前起動なし）
-        print(f"\n=== plamo-translate (サーバー事前起動なし) のテスト ===")
-        
-        for test_key, test_info in TEST_CASES.items():
-            print(f"\n{test_info['name']}:")
-            times = []
-            success_count = 0
             
-            for i in range(iterations):
-                translated, elapsed = self._translate_plamo(test_info["text"], server_prestart=False)
-                if translated:
-                    times.append(elapsed)
-                    success_count += 1
-                    print(f"  試行{i+1}: {elapsed:.3f}秒")
-                else:
-                    print(f"  試行{i+1}: 失敗")
+            # Plamoのテスト（サーバー事前起動あり）
+            print(f"\n=== plamo-translate (サーバー事前起動あり) のテスト ===")
+            print("※注意: 実際のサーバー事前起動の実装は、plamo-translateの仕様に応じて調整が必要です")
             
-            if times:
-                avg_time = statistics.mean(times)
-                min_time = min(times)
-                max_time = max(times)
-                std_dev = statistics.stdev(times) if len(times) > 1 else 0
-                
-                print(f"  成功: {success_count}/{iterations}")
-                print(f"  平均: {avg_time:.3f}秒")
-                print(f"  最小: {min_time:.3f}秒")
-                print(f"  最大: {max_time:.3f}秒")
-                print(f"  標準偏差: {std_dev:.3f}秒")
-        
-        # Plamoのテスト（サーバー事前起動あり）
-        print(f"\n=== plamo-translate (サーバー事前起動あり) のテスト ===")
-        print("※注意: 実際のサーバー事前起動の実装は、plamo-translateの仕様に応じて調整が必要です")
-        
-        # サーバーをバックグラウンドで起動
-        server_process = None
-        try:
-            print("plamo-translateサーバーを起動中...")
-            server_process = subprocess.Popen(
-                ["plamo-translate", "server"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-            
-            # サーバーの起動を少し待つ
-            import time
-            time.sleep(20)
-            print("サーバー起動完了")
-            
-        except Exception as e:
-            print(f"サーバー起動エラー: {e}")
-            return
-        
-        for test_key, test_info in TEST_CASES.items():
-            print(f"\n{test_info['name']}:")
-            times = []
-            success_count = 0
-            
-            for i in range(iterations):
-                translated, elapsed = self._translate_plamo(test_info["text"], server_prestart=True)
-                if translated:
-                    times.append(elapsed)
-                    success_count += 1
-                    print(f"  試行{i+1}: {elapsed:.3f}秒")
-                else:
-                    print(f"  試行{i+1}: 失敗")
-            
-            if times:
-                avg_time = statistics.mean(times)
-                min_time = min(times)
-                max_time = max(times)
-                std_dev = statistics.stdev(times) if len(times) > 1 else 0
-                
-                print(f"  成功: {success_count}/{iterations}")
-                print(f"  平均: {avg_time:.3f}秒")
-                print(f"  最小: {min_time:.3f}秒")
-                print(f"  最大: {max_time:.3f}秒")
-                print(f"  標準偏差: {std_dev:.3f}秒")
-        
-        # サーバープロセスのクリーンアップ
-        if server_process:
+            # サーバーをバックグラウンドで起動
+            server_process = None
             try:
-                print("\nplamo-translateサーバーを終了中...")
-                server_process.terminate()
-                server_process.wait(timeout=5)
-                print("サーバー終了完了")
-            except subprocess.TimeoutExpired:
-                print("サーバーの強制終了を実行中...")
-                server_process.kill()
-                server_process.wait()
-                print("サーバー強制終了完了")
+                print("plamo-translateサーバーを起動中...")
+                server_process = subprocess.Popen(
+                    ["plamo-translate", "server"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                
+                # サーバーの起動を少し待つ
+                import time
+                time.sleep(20)
+                print("サーバー起動完了")
+                
             except Exception as e:
-                print(f"サーバー終了エラー: {e}")
+                print(f"サーバー起動エラー: {e}")
+                return
+            
+            for test_key, test_info in TEST_CASES.items():
+                print(f"\n{test_info['name']}:")
+                times = []
+                success_count = 0
+                
+                for i in range(iterations):
+                    translated, elapsed = self._translate_plamo(test_info["text"], server_prestart=True)
+                    if translated:
+                        times.append(elapsed)
+                        success_count += 1
+                        print(f"  試行{i+1}: {elapsed:.3f}秒")
+                    else:
+                        print(f"  試行{i+1}: 失敗")
+                
+                if times:
+                    avg_time = statistics.mean(times)
+                    min_time = min(times)
+                    max_time = max(times)
+                    std_dev = statistics.stdev(times) if len(times) > 1 else 0
+                    
+                    print(f"  成功: {success_count}/{iterations}")
+                    print(f"  平均: {avg_time:.3f}秒")
+                    print(f"  最小: {min_time:.3f}秒")
+                    print(f"  最大: {max_time:.3f}秒")
+                    print(f"  標準偏差: {std_dev:.3f}秒")
+            
+            # サーバープロセスのクリーンアップ
+            if server_process:
+                try:
+                    print("\nplamo-translateサーバーを終了中...")
+                    server_process.terminate()
+                    server_process.wait(timeout=5)
+                    print("サーバー終了完了")
+                except subprocess.TimeoutExpired:
+                    print("サーバーの強制終了を実行中...")
+                    server_process.kill()
+                    server_process.wait()
+                    print("サーバー強制終了完了")
+                except Exception as e:
+                    print(f"サーバー終了エラー: {e}")
 
 def main():
     """メイン関数"""
+    # コマンドライン引数の解析
+    parser = argparse.ArgumentParser(description="翻訳モデルの性能比較テスト")
+    parser.add_argument(
+        "--models", 
+        nargs="+", 
+        choices=["openai", "gemini", "plamo"],
+        default=["openai", "gemini", "plamo"],
+        help="テストするモデルを指定 (デフォルト: すべて)"
+    )
+    parser.add_argument(
+        "--iterations", 
+        type=int, 
+        default=10,
+        help="各テストケースの実行回数 (デフォルト: 10)"
+    )
+    
+    args = parser.parse_args()
+    
     benchmark = TranslationBenchmark()
     
     # APIキーの確認
-    if not benchmark.openai_key:
+    if "openai" in args.models and not benchmark.openai_key:
         print("警告: OPENAI_API_KEYが設定されていません")
-    if not benchmark.gemini_key:
+    if "gemini" in args.models and not benchmark.gemini_key:
         print("警告: GEMINI_API_KEYが設定されていません")
     
     # ベンチマークを実行
-    benchmark.run_benchmark(iterations=10)
+    benchmark.run_benchmark(iterations=args.iterations, models_to_test=args.models)
 
 
 if __name__ == "__main__":
